@@ -4,10 +4,6 @@ An MCP (Model Context Protocol) server exposing the [Buildin.ai](https://buildin
 
 Covers the full public API surface: **pages, databases, blocks, search, and users** — create, read, update, archive, query — plus three convenience helpers that work with Markdown.
 
-**Two transport modes:**
-- **stdio** (default) — for local MCP clients, uses `BUILDIN_API_TOKEN` env var
-- **HTTP + OAuth 2.1** — for remote/web MCP clients, authenticates users via Buildin.ai's OAuth flow
-
 ## Tools (19 total)
 
 ### Pages (5)
@@ -41,23 +37,13 @@ Covers the full public API surface: **pages, databases, blocks, search, and user
 
 > Buildin.ai does not expose a Comments API or a hard-delete for pages — archive is the documented way to remove pages.
 
-## Quick start
-
-### stdio mode (default — no install needed)
+## Quick start (npx — no install needed)
 
 ```bash
 BUILDIN_API_TOKEN=sk-... npx buildin-mcp
 ```
 
-The server starts on stdio and is ready to accept MCP requests.
-
-### HTTP mode (OAuth 2.1)
-
-```bash
-BUILDIN_OAUTH_CLIENT_ID=... BUILDIN_OAUTH_CLIENT_SECRET=... npx buildin-mcp --http
-```
-
-The server starts on `http://localhost:5137` with full MCP OAuth 2.1 support. MCP clients connect via Streamable HTTP transport and authenticate through Buildin.ai's OAuth flow — no API token needed.
+That's it. The server starts on stdio and is ready to accept MCP requests.
 
 ## Usage with MCP clients
 
@@ -136,22 +122,9 @@ node dist/index.js
 
 ## Environment variables
 
-### stdio mode
-
 | Variable | Required | Description |
 |---|---|---|
 | `BUILDIN_API_TOKEN` | **yes** | Buildin.ai bot/integration token |
-| `BUILDIN_API_BASE_URL` | no | Override API base (default: `https://api.buildin.ai/v1`) |
-| `BUILDIN_MCP_DEBUG` | no | Set to `1` for verbose debug logging to stderr |
-
-### HTTP mode (`--http` or `BUILDIN_MCP_HTTP=1`)
-
-| Variable | Required | Description |
-|---|---|---|
-| `BUILDIN_OAUTH_CLIENT_ID` | **yes** | Buildin.ai OAuth application client ID |
-| `BUILDIN_OAUTH_CLIENT_SECRET` | **yes** | Buildin.ai OAuth application client secret |
-| `PORT` | no | HTTP listen port (default: `5137`) |
-| `BASE_URL` | no | Public base URL (default: `http://localhost:$PORT`) |
 | `BUILDIN_API_BASE_URL` | no | Override API base (default: `https://api.buildin.ai/v1`) |
 | `BUILDIN_MCP_DEBUG` | no | Set to `1` for verbose debug logging to stderr |
 
@@ -178,8 +151,8 @@ BUILDIN_API_TOKEN=... node -e "
 ## Development
 
 - **Runtime:** Node 18+, TypeScript 5.6, ESM.
-- **Transport:** stdio (default) or HTTP with OAuth 2.1 (`--http` flag).
-- **Logging:** stderr only — stdout is reserved for MCP JSON-RPC in stdio mode. Never `console.log`.
+- **Transport:** stdio only.
+- **Logging:** stderr only — stdout is reserved for MCP JSON-RPC. Never `console.log`.
 - **Retries:** automatic on 429 and 5xx (except 501), exponential backoff, 3 attempts.
 
 ## License
