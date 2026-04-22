@@ -10,6 +10,7 @@
 
 import { BuildinApiError, BuildinConfigError } from "./errors.js";
 import { logger } from "../util/logger.js";
+import { getContextToken } from "../util/token_context.js";
 
 const DEFAULT_BASE_URL = "https://api.buildin.ai/v1";
 const MAX_ATTEMPTS = 3;
@@ -28,7 +29,7 @@ export interface BuildinFetchOptions {
 
 function getConfig(opts: BuildinFetchOptions = {}): { baseUrl: string; token: string } {
   const baseUrl = (opts.baseUrl ?? process.env.BUILDIN_API_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
-  const token = opts.token ?? process.env.BUILDIN_API_TOKEN ?? "";
+  const token = opts.token ?? getContextToken() ?? process.env.BUILDIN_API_TOKEN ?? "";
   if (!token) {
     throw new BuildinConfigError(
       "BUILDIN_API_TOKEN is not set. Export it in the environment or in your MCP client config before starting buildin-mcp.",
