@@ -1,0 +1,52 @@
+{
+  "name": "buildin-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing the Buildin.ai REST API (pages, databases, blocks, search, users) to LLMs.",
+  "type": "module",
+  "bin": {
+    "buildin-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc --noEmit -p .",
+    "start": "node dist/index.js",
+    "dev": "tsc -w -p .",
+    "test": "tsc -p tsconfig.test.json && node --test dist-test/tests/*.test.js",
+    "smoke": "node dist/tests/smoke.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "buildin",
+    "buildin.ai",
+    "ai",
+    "llm",
+    "notion"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ekho/buildin-mcp.git"
+  },
+  "homepage": "https://github.com/ekho/buildin-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/ekho/buildin-mcp/issues"
+  }
+}
