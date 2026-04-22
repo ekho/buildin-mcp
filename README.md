@@ -37,25 +37,15 @@ Covers the full public API surface: **pages, databases, blocks, search, and user
 
 > Buildin.ai does not expose a Comments API or a hard-delete for pages — archive is the documented way to remove pages.
 
-## Install
+## Quick start (npx — no install needed)
 
 ```bash
-git clone <this-repo> ~/d/buildin-mcp
-cd ~/d/buildin-mcp
-npm install
-npm run build
+BUILDIN_API_TOKEN=sk-... npx buildin-mcp
 ```
 
-## Configure
+That's it. The server starts on stdio and is ready to accept MCP requests.
 
-Set your Buildin.ai bot token:
-
-```bash
-export BUILDIN_API_TOKEN="sk-..."
-# optional:
-# export BUILDIN_API_BASE_URL="https://api.buildin.ai/v1"
-# export BUILDIN_MCP_DEBUG=1
-```
+## Usage with MCP clients
 
 ### Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`)
 
@@ -63,8 +53,8 @@ export BUILDIN_API_TOKEN="sk-..."
 {
   "mcpServers": {
     "buildin": {
-      "command": "node",
-      "args": ["/absolute/path/to/buildin-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "buildin-mcp"],
       "env": {
         "BUILDIN_API_TOKEN": "sk-..."
       }
@@ -73,11 +63,55 @@ export BUILDIN_API_TOKEN="sk-..."
 }
 ```
 
-### Claude Code / Cursor
+### Claude Code
 
 ```bash
-claude mcp add buildin -e BUILDIN_API_TOKEN=sk-... -- node /absolute/path/to/buildin-mcp/dist/index.js
+claude mcp add buildin -e BUILDIN_API_TOKEN=sk-... -- npx -y buildin-mcp
 ```
+
+### Cursor
+
+Add to `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "buildin": {
+      "command": "npx",
+      "args": ["-y", "buildin-mcp"],
+      "env": {
+        "BUILDIN_API_TOKEN": "sk-..."
+      }
+    }
+  }
+}
+```
+
+### Windsurf / OpenCode / any stdio MCP client
+
+```bash
+BUILDIN_API_TOKEN=sk-... npx -y buildin-mcp
+```
+
+## Install from source (optional)
+
+If you prefer a local clone instead of npx:
+
+```bash
+git clone https://github.com/ekho/buildin-mcp.git
+cd buildin-mcp
+npm install
+npm run build
+node dist/index.js
+```
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `BUILDIN_API_TOKEN` | **yes** | Buildin.ai bot/integration token |
+| `BUILDIN_API_BASE_URL` | no | Override API base (default: `https://api.buildin.ai/v1`) |
+| `BUILDIN_MCP_DEBUG` | no | Set to `1` for verbose debug logging to stderr |
 
 ## Verify
 

@@ -1,6 +1,6 @@
 {
   "name": "buildin-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server exposing the Buildin.ai REST API (pages, databases, blocks, search, users) to LLMs.",
   "type": "module",
   "bin": {
@@ -18,7 +18,8 @@
     "start": "node dist/index.js",
     "dev": "tsc -w -p .",
     "test": "tsc -p tsconfig.test.json && node --test dist-test/tests/*.test.js",
-    "smoke": "node dist/tests/smoke.js"
+    "smoke": "node dist/tests/smoke.js",
+    "prepublishOnly": "npm run build"
   },
   "engines": {
     "node": ">=18"
