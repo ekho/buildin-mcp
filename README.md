@@ -87,10 +87,25 @@ Add to `.cursor/mcp.json`:
 }
 ```
 
-### Windsurf / OpenCode / any stdio MCP client
+### Windsurf / any stdio MCP client
 
 ```bash
 BUILDIN_API_TOKEN=sk-... npx -y buildin-mcp
+```
+
+### OpenCode
+
+Add to `~/.config/opencode/opencode.jsonc` (inside the `"mcp"` section):
+
+```jsonc
+"buildin": {
+  "type": "local",
+  "command": ["npx", "-y", "buildin-mcp"],
+  "env": {
+    "BUILDIN_API_TOKEN": "sk-..."
+  },
+  "enabled": true
+}
 ```
 
 ## Install from source (optional)
