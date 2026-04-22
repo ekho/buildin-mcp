@@ -1,6 +1,6 @@
 {
   "name": "buildin-mcp",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "MCP server exposing the Buildin.ai REST API (pages, databases, blocks, search, users) to LLMs.",
   "type": "module",
   "bin": {

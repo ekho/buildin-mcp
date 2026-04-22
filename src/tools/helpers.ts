@@ -3,10 +3,12 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { buildinFetch } from "../http/client.js";
 import { formatErrorForTool } from "../http/errors.js";
 import { uuidLike } from "../schemas/common.js";
+import { BlockInputSchema } from "../schemas/blocks.js";
 import { markdownToBlocks } from "../markdown/md_to_blocks.js";
 import { blocksToMarkdown } from "../markdown/blocks_to_md.js";
 import { fetchAllPaginated } from "../util/pagination.js";
-import type { BuildinBlockObject } from "../markdown/types.js";
+import type { BuildinBlockObject, BuildinBlockInput } from "../markdown/types.js";
+import { loadBlockTree, blockToInput } from "../util/block_tree.js";
 
 function jsonResult(data: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
@@ -120,19 +122,86 @@ export function registerHelperTools(server: McpServer): void {
       }
     },
   );
-}
+  server.registerTool(
+    "buildin_insert_blocks",
+    {
+      title: "Insert blocks at a specific position",
+      description:
+        "Insert new blocks after a specific child block within a parent. " +
+        "Since the Buildin.ai API only supports appending to the end, this works by: " +
+        "1) deep-cloning all blocks after the insertion point, " +
+        "2) deleting them, " +
+        "3) appending the new blocks, " +
+        "4) re-appending the cloned blocks. " +
+        "WARNING: block IDs of re-created blocks will change. This is NOT atomic — " +
+        "if interrupted mid-operation, blocks may be lost. Use with caution.",
+      inputSchema: {
+        parent_id: uuidLike.describe("Page or parent block ID containing the children."),
+        after: uuidLike.describe("ID of the existing child block to insert after."),
+        children: z.array(BlockInputSchema).min(1).describe("New blocks to insert."),
+      },
+    },
+    async ({ parent_id, after, children }) => {
+      try {
+        // 1. Fetch all current children
+        const allChildren = await fetchAllPaginated<BuildinBlockObject>(
+          `/blocks/${encodeURIComponent(parent_id)}/children`,
+        );
 
-async function loadBlockTree(blockId: string, depth: number): Promise<BuildinBlockObject[]> {
-  const kids = await fetchAllPaginated<BuildinBlockObject>(
-    `/blocks/${encodeURIComponent(blockId)}/children`,
+        // 2. Find the insertion point
+        const afterIndex = allChildren.findIndex((b) => b.id === after);
+        if (afterIndex === -1) {
+          return errResult(new Error(`Block ${after} not found among children of ${parent_id}`));
+        }
+
+        // 3. Blocks after the insertion point = "tail"
+        const tail = allChildren.slice(afterIndex + 1);
+        if (tail.length === 0) {
+          // Nothing after — just append normally
+          const res = await buildinFetch("PATCH", `/blocks/${encodeURIComponent(parent_id)}/children`, { children });
+          return jsonResult({ inserted: res, reinserted_count: 0 });
+        }
+
+        // 4. Deep-clone tail blocks (fetch children recursively)
+        const clonedTail: BuildinBlockInput[] = [];
+        for (const block of tail) {
+          const deep = block.has_children && block.id
+            ? await loadBlockTree(block.id, 5)
+            : undefined;
+          clonedTail.push(blockToInput(block, deep));
+        }
+
+        // 5. Delete tail blocks (reverse order to avoid index shifts, though IDs are stable)
+        for (const block of tail.reverse()) {
+          if (block.id) {
+            await buildinFetch("DELETE", `/blocks/${encodeURIComponent(block.id)}`);
+          }
+        }
+
+        // 6. Append new blocks
+        const insertRes = await buildinFetch(
+          "PATCH",
+          `/blocks/${encodeURIComponent(parent_id)}/children`,
+          { children },
+        );
+
+        // 7. Re-append tail blocks
+        const reinsertRes = await buildinFetch(
+          "PATCH",
+          `/blocks/${encodeURIComponent(parent_id)}/children`,
+          { children: clonedTail },
+        );
+
+        return jsonResult({
+          inserted: insertRes,
+          reinserted_count: clonedTail.length,
+          reinserted: reinsertRes,
+        });
+      } catch (err) {
+        return errResult(err);
+      }
+    },
   );
-  if (depth <= 0) return kids;
-  for (const k of kids) {
-    if (k.has_children && typeof k.id === "string") {
-      k.children = await loadBlockTree(k.id, depth - 1);
-    }
-  }
-  return kids;
 }
 
 function extractTitle(page: Record<string, unknown>): string {

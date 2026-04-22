@@ -28,6 +28,8 @@ export interface BuildinBlockInput {
 export interface BuildinBlockObject {
   id?: string;
   type: string;
+  data?: Record<string, unknown>;
   has_children?: boolean;
+  children?: BuildinBlockObject[];
   [key: string]: unknown;
 }
