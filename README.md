@@ -72,18 +72,20 @@ BUILDIN_API_TOKEN=sk-... npx -y buildin-mcp
 
 ### OpenCode
 
-Add to `~/.config/opencode/opencode.jsonc` (inside the `"mcp"` section):
+Add to your project's `opencode.jsonc` or global `~/.config/opencode/opencode.jsonc` (inside the `"mcp"` section):
 
 ```jsonc
 "buildin": {
   "type": "local",
   "command": ["npx", "-y", "buildin-mcp"],
-  "env": {
+  "environment": {
     "BUILDIN_API_TOKEN": "sk-..."
   },
   "enabled": true
 }
 ```
+
+> **Note:** OpenCode uses `"environment"` (not `"env"`) for passing environment variables to local MCP servers.
 
 ## Install from source (optional)
 
